@@ -1,13 +1,14 @@
-SendHTTP(key id)
+#include "ban-updater/ban.h"
+
+
+SendHTTP()
 {
 	string post = "https://script.google.com/macros/s/AKfycbzUyVzx4PlIUgaGjYAHQ2pfbPAxmr7Wt5qAFXkWjXY7WI48mU7b/exec";
 
-	list params =
-		[
-			HTTP_METHOD, "GET",
+	list params = [
+		HTTP_METHOD, "GET",
 		HTTP_MIMETYPE, "application/x-www-form-urlencoded;charset=utf-8",
-		HTTP_BODY_MAXLENGTH, 16384
-			];
+		HTTP_BODY_MAXLENGTH, 16384];
 	string body = "";
 
 	string url = post + "?" + body;
@@ -39,13 +40,21 @@ UpdateBanList(list banlist)
 
 default
 {
-	touch_end(integer total_number)
-	{
-		SendHTTP(llDetectedKey(0));
-	}
 	http_response( key request_id, integer status, list metadata, string body )
 	{
 		list banlist = llParseString2List(body, [","], []);
 		UpdateBanList(banlist);
+	}
+	listen(integer channel, string name, key id, string message)
+	{
+		if(message == "update") SendHTTP();
+	}
+	state_entry()
+	{
+		llListen(REGION_CHANNEL, "", NULL_KEY, "");
+	}
+	touch_end(integer total_number)
+	{
+		SendHTTP();
 	}
 }
