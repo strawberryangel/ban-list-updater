@@ -39,7 +39,7 @@ UpdateBanList(list banlist)
 
 default
 {
-	touch_start(integer num)
+	touch_end(integer total_number)
 	{
 		SendHTTP(llDetectedKey(0));
 	}
