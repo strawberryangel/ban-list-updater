@@ -1,5 +1,19 @@
 #include "ban-updater/ban.h"
+#include "lib/avatar.lsl"
+#include "lib/whitelist.lsl"
 
+		string VERSION = "1.3.0";
+
+say(string message)
+{
+	llInstantMessage(WL_Sophie, message);
+}
+
+AddTempBan(key agent)
+{
+	say("Temporarily banning " + format_name(agent) + " for " + (string)DEAULT_BAN_TIME + " hourse.");
+	llAddToLandBanList(agent, DEAULT_BAN_TIME);
+}
 
 SendHTTP()
 {
@@ -18,23 +32,23 @@ SendHTTP()
 
 UpdateBanList(list banlist)
 {
-	llSay(PUBLIC_CHANNEL, "Resetting ban list.");
+	say("Resetting ban list.");
 	llResetLandBanList();
 	integer length = llGetListLength(banlist);
-	llSay(PUBLIC_CHANNEL, "Reloading ban list with " + (string)length + " bad apples.");
+	say("Reloading ban list with " + (string)length + " bad apples.");
 	integer i = 0;
 	while(i < length)
 	{
 		key badApple = (key)llList2String(banlist, i);
 
 		if(badApple == NULL_KEY)
-			llSay(PUBLIC_CHANNEL, "Cannot get key for index #" + (string)i);
+			say("Cannot get key for index #" + (string)i);
 		else
 			llAddToLandBanList(badApple, 0);
 
 		i++;
 	}
-	llSay(PUBLIC_CHANNEL, "Update complete.");
+	say("Update complete.");
 }
 
 
@@ -42,19 +56,25 @@ default
 {
 	http_response( key request_id, integer status, list metadata, string body )
 	{
-		list banlist = llParseString2List(body, [","], []);
-		UpdateBanList(banlist);
+		if(status == 200) {
+			list banlist = llParseString2List(body, [","], []);
+			if(llGetListLength(banlist) > 0)
+				UpdateBanList(banlist);
+		}
 	}
 	listen(integer channel, string name, key id, string message)
 	{
-		if(message == "update") SendHTTP();
+		if(channel == REGION_CHANNEL && message == "update") SendHTTP();
+		if(channel == REGION_TEMP_BAN_CHANNEL) AddTempBan((key)message);
 	}
 	state_entry()
 	{
 		llListen(REGION_CHANNEL, "", NULL_KEY, "");
+		llListen(REGION_TEMP_BAN_CHANNEL, "", NULL_KEY, "");
 	}
 	touch_end(integer total_number)
 	{
 		SendHTTP();
 	}
 }
+

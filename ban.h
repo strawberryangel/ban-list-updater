@@ -1,1 +1,4 @@
 integer REGION_CHANNEL =  -3897230;
+integer REGION_TEMP_BAN_CHANNEL = -62283439; // 7877 * 7907
+float DEAULT_BAN_TIME = 72; // hours
+
