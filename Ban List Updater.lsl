@@ -1,6 +1,6 @@
 #include "ban-updater/ban.h"
+#include "ban-updater/whitelist.lsl" 
 #include "lib/avatar.lsl"
-#include "lib/whitelist.lsl"
 
 		string VERSION = "1.3.0";
 
